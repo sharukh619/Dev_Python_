@@ -1,0 +1,154 @@
+Sub occurance()
+
+Dim uranges As Range
+Dim urange As Range
+Dim strr As String
+Dim splitVals As String
+Dim totalVals As String
+Dim a As Integer
+Dim b As Integer
+
+
+Set uranges = ActiveSheet.Range("B1", Range("B1").End(xlDown))
+
+For Each urange In uranges
+
+
+'splits Text active cell using ALT+10 char as separator
+Debug.Print urange.Row
+
+splitVals = urange
+
+totalVals = "'"
+
+Target_Count splitVals, totalVals
+
+ b = urange.Row
+    
+ a = Target_Count(splitVals, totalVals)
+    
+
+GetStringFromQuotation splitVals, totalVals, a, b
+
+splitstring splitVals, b
+
+
+Next urange
+Set tradeid = ActiveSheet.Range("A1", Range("A1").End(xlDown))
+
+For Each ID In tradeid
+
+Worksheets("extraction").Cells(ID.Row + 1, 1) = Right(ID, 14)
+
+Next ID
+
+End Sub
+Public Function Target_Count(cot As String, occ As String) As Integer
+
+Dim Count As Integer
+Dim Target As String
+Dim Cell As Object
+Dim N As Integer
+Dim i As Integer
+
+    
+   Count = 0
+   Target = occ
+   If Target = "" Then GoTo Done
+      For Each Cell In Selection
+         N = InStr(1, cot, Target)
+         While N <> 0
+            Count = Count + 1
+            N = InStr(N + 1, cot, Target)
+         Wend
+      Next Cell
+  i = Count / 2
+Done:
+Target_Count = i
+End Function
+
+Public Function GetStringFromQuotation(sText As String, sDelimiter As String, delimetCount As Integer, roweach As Integer)
+     'Store the position of the 1st and 2nd delimiter in the String
+    Dim iPositionOfFirstDelimiter As Integer, iPositionOfSecondDelimiter As Integer
+     'Store the length of the delimiter
+    Dim iLenDelimiter As Integer
+    Dim i As Integer
+    Dim pas As Long
+    Dim c As Integer
+    
+    
+    
+   iPositionOfSecondDelimiter = 0
+     
+     'Deliver nothing if the function doesn't get a single usable parameter
+     'otherwise you'd get an error later on
+     
+    For i = 0 To delimetCount
+            
+        c = 0
+    
+        sText = Right(sText, Len(sText) - iPositionOfSecondDelimiter)
+        
+        Debug.Print sText
+    
+    If Len(sText) = 0 And Len(sDelimiter) = 0 Then
+        GetStringFromQuotation = ""
+        Exit Function
+    End If
+     
+    iLenDelimiter = Len(sDelimiter)
+     'Find 1st occurence of delimiter
+    iPositionOfFirstDelimiter = InStr(sText, sDelimiter)
+     'Find the 2nd one, starting right behind the first one
+    iPositionOfSecondDelimiter = InStr(iPositionOfFirstDelimiter + iLenDelimiter, _
+    sText, sDelimiter)
+    
+     iPositionOfThirdDelimiter = InStr(iPositionOfSecondDelimiter + iLenDelimiter, _
+    sText, sDelimiter)
+    
+    iPositionOfFourthDelimiter = InStr(iPositionOfThirdDelimiter + iLenDelimiter, _
+    sText, sDelimiter)
+     
+     'If there are 2 occurences
+    If iPositionOfFirstDelimiter > 0 And iPositionOfSecondDelimiter > 0 Then
+         'Take the part of the string that's right between them
+        GetStringFromQuotation = Mid(sText, iPositionOfFirstDelimiter + iLenDelimiter, _
+        iPositionOfSecondDelimiter - iPositionOfFirstDelimiter - iLenDelimiter)
+    Else
+        GetStringFromQuotation = ""
+        Debug.Print GetStringFromQuotation
+        
+    End If
+    
+    Worksheets("extraction").Cells(roweach + 1, i + 4).Value = GetStringFromQuotation
+    Next i
+End Function
+Public Function splitstring(stringtext As String, roweach As Integer)
+    Dim DataString As String
+    Dim SearchString As String
+    Dim i As Long
+    Dim val As String
+    Dim element As Variant
+    
+    
+
+    DataString = stringtext
+    SearchString = ":::"
+
+    i = InStr(1, DataString, SearchString, vbTextCompare) + 2
+   ' i = InStr(i + 1, DataString, SearchString, vbTextCompare)
+   
+    val = Right(DataString, Len(DataString) - i)
+    
+    
+    element = Split(val, "||")
+    
+    For i = 0 To UBound(element)
+    
+        Worksheets("extraction").Cells(roweach + 1, i + 2).Value = element(i)
+        
+    
+     Next i
+
+    
+End Function
